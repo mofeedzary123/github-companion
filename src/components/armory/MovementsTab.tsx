@@ -137,7 +137,7 @@ const MovementsTab = ({ search }: Props) => {
         </div>
       </div>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen} modal={false}>
         <DialogContent dir="rtl" className="max-w-lg rounded-2xl p-6 overflow-y-auto max-h-[90vh]">
           <DialogHeader><DialogTitle className="text-xl font-black text-primary flex items-center gap-2 border-b pb-4"><History size={24} /> تسجيل حركة جديدة</DialogTitle></DialogHeader>
           
