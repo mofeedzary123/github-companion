@@ -15,12 +15,12 @@ const RecipientsTab = ({ search }: Props) => {
   const { recipients, deleteRecipient, addRecipient, updateRecipient, movements, getItemName, getWarehouseName } = useArmory();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editItem, setEditItem] = useState<Recipient | null>(null);
-  const [form, setForm] = useState({ name: '', militaryId: '', unit: '', rank: '', phone: '', notes: '' });
+  const [form, setForm] = useState({ name: '', militaryId: '', unit: '', rank: '', phone: '', weaponName: '', weaponSerial: '', weaponType: '', notes: '' });
 
   const filtered = recipients.filter(r => r.name.includes(search) || r.militaryId.includes(search) || r.unit.includes(search));
 
-  const openAdd = () => { setEditItem(null); setForm({ name: '', militaryId: '', unit: '', rank: '', phone: '', notes: '' }); setDialogOpen(true); };
-  const openEdit = (r: Recipient) => { setEditItem(r); setForm({ name: r.name, militaryId: r.militaryId, unit: r.unit, rank: r.rank || '', phone: r.phone || '', notes: r.notes || '' }); setDialogOpen(true); };
+  const openAdd = () => { setEditItem(null); setForm({ name: '', militaryId: '', unit: '', rank: '', phone: '', weaponName: '', weaponSerial: '', weaponType: '', notes: '' }); setDialogOpen(true); };
+  const openEdit = (r: Recipient) => { setEditItem(r); setForm({ name: r.name, militaryId: r.militaryId, unit: r.unit, rank: r.rank || '', phone: r.phone || '', weaponName: r.weaponName || '', weaponSerial: r.weaponSerial || '', weaponType: r.weaponType || '', notes: r.notes || '' }); setDialogOpen(true); };
 
   const handleSubmit = () => {
     if (!form.name || !form.militaryId) return;
@@ -42,10 +42,12 @@ const RecipientsTab = ({ search }: Props) => {
             <thead className="bg-secondary/30 text-muted-foreground">
               <tr>
                 <th className="p-3 font-black">#</th>
-                <th className="p-3 font-black">الاسم</th>
+                <th className="p-3 font-black">اسم الجندي</th>
                 <th className="p-3 font-black">الرقم العسكري</th>
                 <th className="p-3 font-black">الرتبة</th>
-                <th className="p-3 font-black">الوحدة</th>
+                <th className="p-3 font-black">اسم السلاح</th>
+                <th className="p-3 font-black">رقم السلاح</th>
+                <th className="p-3 font-black">نوع السلاح</th>
                 <th className="p-3 font-black text-center">عدد العهد</th>
                 <th className="p-3 text-center">إجراءات</th>
               </tr>
@@ -59,7 +61,9 @@ const RecipientsTab = ({ search }: Props) => {
                     <td className="p-3 font-bold">{r.name}</td>
                     <td className="p-3 text-xs font-mono font-bold text-primary">{r.militaryId}</td>
                     <td className="p-3 text-xs text-muted-foreground">{r.rank || '-'}</td>
-                    <td className="p-3 text-xs text-muted-foreground">{r.unit}</td>
+                    <td className="p-3 text-xs font-bold">{r.weaponName || '-'}</td>
+                    <td className="p-3 text-xs font-mono text-primary">{r.weaponSerial || '-'}</td>
+                    <td className="p-3 text-xs text-muted-foreground">{r.weaponType || '-'}</td>
                     <td className="p-3 text-center font-black">{recipientMovements.length}</td>
                     <td className="p-3">
                       <div className="flex justify-center gap-1">
@@ -72,7 +76,7 @@ const RecipientsTab = ({ search }: Props) => {
                 );
               })}
               {filtered.length === 0 && (
-                <tr><td colSpan={7} className="p-16 text-center"><div className="flex flex-col items-center opacity-30"><Search size={40} className="mb-2" /><p className="font-black">لا يوجد مستلمين</p></div></td></tr>
+                <tr><td colSpan={9} className="p-16 text-center"><div className="flex flex-col items-center opacity-30"><Search size={40} className="mb-2" /><p className="font-black">لا يوجد مستلمين</p></div></td></tr>
               )}
             </tbody>
           </table>
@@ -80,20 +84,30 @@ const RecipientsTab = ({ search }: Props) => {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent dir="rtl" className="max-w-lg rounded-2xl p-6">
-          <DialogHeader><DialogTitle className="text-xl font-black text-primary flex items-center gap-2"><Users size={24} />{editItem ? 'تعديل مستلم' : 'إضافة مستلم'}</DialogTitle></DialogHeader>
+        <DialogContent dir="rtl" className="max-w-lg rounded-2xl p-6 overflow-y-auto max-h-[90vh]">
+          <DialogHeader><DialogTitle className="text-xl font-black text-primary flex items-center gap-2"><Users size={24} />{editItem ? 'تعديل مستلم' : 'إضافة مستلم سلاح'}</DialogTitle></DialogHeader>
           <div className="grid gap-4 mt-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label className="font-bold text-sm">الاسم *</Label><Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} /></div>
-              <div className="space-y-2"><Label className="font-bold text-sm">الرقم العسكري *</Label><Input value={form.militaryId} onChange={e => setForm({...form, militaryId: e.target.value})} /></div>
+              <div className="space-y-2"><Label className="font-bold text-sm">اسم الجندي *</Label><Input className="rounded-xl" value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="اسم الجندي الكامل" /></div>
+              <div className="space-y-2"><Label className="font-bold text-sm">الرقم العسكري *</Label><Input className="rounded-xl" value={form.militaryId} onChange={e => setForm({...form, militaryId: e.target.value})} placeholder="الرقم العسكري" /></div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label className="font-bold text-sm">الرتبة</Label><Input value={form.rank} onChange={e => setForm({...form, rank: e.target.value})} /></div>
-              <div className="space-y-2"><Label className="font-bold text-sm">الوحدة</Label><Input value={form.unit} onChange={e => setForm({...form, unit: e.target.value})} /></div>
+              <div className="space-y-2"><Label className="font-bold text-sm">الرتبة</Label><Input className="rounded-xl" value={form.rank} onChange={e => setForm({...form, rank: e.target.value})} placeholder="مثلاً: جندي أول" /></div>
+              <div className="space-y-2"><Label className="font-bold text-sm">الوحدة</Label><Input className="rounded-xl" value={form.unit} onChange={e => setForm({...form, unit: e.target.value})} placeholder="اسم الوحدة" /></div>
             </div>
-            <div className="space-y-2"><Label className="font-bold text-sm">الهاتف</Label><Input value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} /></div>
-            <div className="space-y-2"><Label className="font-bold text-sm">ملاحظات</Label><Textarea value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} /></div>
-            <div className="flex justify-end gap-3"><Button variant="outline" onClick={() => setDialogOpen(false)}>إلغاء</Button><Button onClick={handleSubmit} className="gradient-primary text-primary-foreground">{editItem ? 'حفظ' : 'إضافة'}</Button></div>
+
+            <div className="border-t pt-4 mt-2">
+              <h4 className="font-black text-sm text-primary mb-3">بيانات السلاح المستلم</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2"><Label className="font-bold text-sm">اسم السلاح</Label><Input className="rounded-xl" value={form.weaponName} onChange={e => setForm({...form, weaponName: e.target.value})} placeholder="مثلاً: AK47" /></div>
+                <div className="space-y-2"><Label className="font-bold text-sm">رقم السلاح</Label><Input className="rounded-xl" value={form.weaponSerial} onChange={e => setForm({...form, weaponSerial: e.target.value})} placeholder="الرقم التسلسلي" /></div>
+              </div>
+              <div className="space-y-2 mt-4"><Label className="font-bold text-sm">نوع السلاح</Label><Input className="rounded-xl" value={form.weaponType} onChange={e => setForm({...form, weaponType: e.target.value})} placeholder="مثلاً: بندقية آلية" /></div>
+            </div>
+
+            <div className="space-y-2"><Label className="font-bold text-sm">الهاتف</Label><Input className="rounded-xl" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} /></div>
+            <div className="space-y-2"><Label className="font-bold text-sm">ملاحظات</Label><Textarea className="rounded-xl" value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} /></div>
+            <div className="flex justify-end gap-3 border-t pt-4"><Button variant="outline" className="rounded-xl" onClick={() => setDialogOpen(false)}>إلغاء</Button><Button onClick={handleSubmit} className="gradient-primary text-primary-foreground rounded-xl">{editItem ? 'حفظ' : 'إضافة'}</Button></div>
           </div>
         </DialogContent>
       </Dialog>

@@ -10,12 +10,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ShieldCheck, Pencil, Trash2, Printer, Search, Plus, AlertTriangle } from 'lucide-react';
 import { printWeaponReport } from '@/utils/armoryPrint';
 
-const statuses: WeaponStatus[] = ['موجود بالمخزن', 'مُصرف', 'تحت الصيانة', 'تالف'];
+const statuses: WeaponStatus[] = ['موجود بالمخزن', 'مُصرف', 'تحت الصيانة', 'تالف', 'مفقود', 'جاهز'];
 const statusColors: Record<string, string> = {
   'موجود بالمخزن': 'bg-success/10 text-success',
   'مُصرف': 'bg-warning/10 text-warning',
   'تحت الصيانة': 'bg-primary/10 text-primary',
   'تالف': 'bg-destructive/10 text-destructive',
+  'مفقود': 'bg-destructive/10 text-destructive',
+  'جاهز': 'bg-success/10 text-success',
 };
 
 interface Props { search: string; }
@@ -24,7 +26,7 @@ const WeaponsTab = ({ search }: Props) => {
   const { weapons, deleteWeapon, addWeapon, updateWeapon, warehouses, getWarehouseName, movements } = useArmory();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editItem, setEditItem] = useState<Weapon | null>(null);
-  const [form, setForm] = useState({ name: '', type: '', serialNumber: '', status: 'موجود بالمخزن' as WeaponStatus, warehouseId: '', quantity: 1, notes: '' });
+  const [form, setForm] = useState({ name: '', type: '', serialNumber: '', status: 'جاهز' as WeaponStatus, warehouseId: '', quantity: 1, notes: '' });
 
   const filtered = weapons.filter(w =>
     w.name.includes(search) || w.serialNumber.includes(search) || w.type.includes(search)
@@ -32,7 +34,7 @@ const WeaponsTab = ({ search }: Props) => {
 
   const openAdd = () => {
     setEditItem(null);
-    setForm({ name: '', type: '', serialNumber: '', status: 'موجود بالمخزن', warehouseId: warehouses[0]?.id || '', quantity: 1, notes: '' });
+    setForm({ name: '', type: '', serialNumber: '', status: 'جاهز', warehouseId: warehouses[0]?.id || '', quantity: 1, notes: '' });
     setDialogOpen(true);
   };
 
@@ -49,10 +51,6 @@ const WeaponsTab = ({ search }: Props) => {
     setDialogOpen(false);
   };
 
-  const handleDelete = (id: string) => {
-    if (!deleteWeapon(id)) return;
-  };
-
   return (
     <>
       <div className="flex justify-between items-center mb-4">
@@ -67,8 +65,8 @@ const WeaponsTab = ({ search }: Props) => {
               <tr>
                 <th className="p-3 font-black">#</th>
                 <th className="p-3 font-black">اسم السلاح</th>
-                <th className="p-3 font-black">النوع</th>
-                <th className="p-3 font-black">الرقم التسلسلي</th>
+                <th className="p-3 font-black">نوع السلاح</th>
+                <th className="p-3 font-black">رقم السلاح</th>
                 <th className="p-3 font-black text-center">الكمية</th>
                 <th className="p-3 font-black">المخزن</th>
                 <th className="p-3 font-black">الحالة</th>
@@ -92,7 +90,7 @@ const WeaponsTab = ({ search }: Props) => {
                   <td className="p-3">
                     <div className="flex justify-center gap-1">
                       <button onClick={() => openEdit(w)} className="p-1.5 hover:bg-primary/10 rounded-lg text-primary"><Pencil size={14} /></button>
-                      <button onClick={() => handleDelete(w.id)} className="p-1.5 hover:bg-destructive/10 rounded-lg text-destructive"><Trash2 size={14} /></button>
+                      <button onClick={() => deleteWeapon(w.id)} className="p-1.5 hover:bg-destructive/10 rounded-lg text-destructive"><Trash2 size={14} /></button>
                       <button onClick={() => printWeaponReport(w, getWarehouseName(w.warehouseId), movements.filter(m => m.itemType === 'سلاح' && m.itemId === w.id))} className="p-1.5 hover:bg-primary/10 rounded-lg text-primary"><Printer size={14} /></button>
                     </div>
                   </td>
@@ -112,30 +110,32 @@ const WeaponsTab = ({ search }: Props) => {
           <div className="grid gap-4 mt-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2"><Label className="font-bold text-sm">اسم السلاح *</Label><Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="مثلاً: AK47" /></div>
-              <div className="space-y-2"><Label className="font-bold text-sm">نوع السلاح</Label><Input value={form.type} onChange={e => setForm({...form, type: e.target.value})} placeholder="مثلاً: بندقية آلية" /></div>
+              <div className="space-y-2"><Label className="font-bold text-sm">رقم السلاح *</Label><Input value={form.serialNumber} onChange={e => setForm({...form, serialNumber: e.target.value})} placeholder="رقم السلاح التسلسلي" /></div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label className="font-bold text-sm">الرقم التسلسلي *</Label><Input value={form.serialNumber} onChange={e => setForm({...form, serialNumber: e.target.value})} placeholder="S/N" /></div>
+              <div className="space-y-2"><Label className="font-bold text-sm">نوع السلاح *</Label><Input value={form.type} onChange={e => setForm({...form, type: e.target.value})} placeholder="مثلاً: بندقية آلية" /></div>
               <div className="space-y-2"><Label className="font-bold text-sm">الكمية *</Label><Input type="number" min={1} value={form.quantity} onChange={e => setForm({...form, quantity: Number(e.target.value)})} /></div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="font-bold text-sm">الحالة</Label>
+                <Label className="font-bold text-sm">الحالة *</Label>
                 <Select value={form.status} onValueChange={v => setForm({...form, status: v as WeaponStatus})}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{statuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                  <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {statuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label className="font-bold text-sm">المخزن *</Label>
                 <Select value={form.warehouseId} onValueChange={v => setForm({...form, warehouseId: v})}>
-                  <SelectTrigger><SelectValue placeholder="اختر المخزن" /></SelectTrigger>
+                  <SelectTrigger className="rounded-xl"><SelectValue placeholder="اختر المخزن" /></SelectTrigger>
                   <SelectContent>{warehouses.map(w => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
-            <div className="space-y-2"><Label className="font-bold text-sm">ملاحظات</Label><Textarea value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} /></div>
-            <div className="flex justify-end gap-3"><Button variant="outline" onClick={() => setDialogOpen(false)}>إلغاء</Button><Button onClick={handleSubmit} className="gradient-primary text-primary-foreground">{editItem ? 'حفظ' : 'إضافة'}</Button></div>
+            <div className="space-y-2"><Label className="font-bold text-sm">ملاحظات</Label><Textarea className="rounded-xl" value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} /></div>
+            <div className="flex justify-end gap-3 border-t pt-4"><Button variant="outline" className="rounded-xl" onClick={() => setDialogOpen(false)}>إلغاء</Button><Button onClick={handleSubmit} className="gradient-primary text-primary-foreground rounded-xl">{editItem ? 'حفظ التعديل' : 'إضافة السلاح'}</Button></div>
           </div>
         </DialogContent>
       </Dialog>
